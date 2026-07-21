@@ -1,0 +1,16 @@
+# Virtual Environment
+venv/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+
+# Excel & Encrypted Output files (Do not upload data files)
+*.xlsx
+*.xls
+*.enc
+
+# IDE / System
+.vscode/
+.idea/
+.DS_Store
