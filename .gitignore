@@ -10,6 +10,11 @@ __pycache__/
 *.xls
 *.enc
 
+# Secrets & Local Storage
+secret
+*.key
+storage/
+
 # IDE / System
 .vscode/
 .idea/
