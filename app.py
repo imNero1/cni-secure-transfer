@@ -1,33 +1,36 @@
 import os
 import shutil
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
 from fastapi.responses import FileResponse
+from sqlalchemy.orm import Session
+
 from security_engine import (
     generate_or_load_key,
     scan_excel_for_sensitive_data,
     encrypt_file,
     decrypt_file
 )
+from database import init_db, get_db, log_transfer_event, fetch_all_logs
 
 # ---------------------------------------------------------
-# 1. FASTAPI APPLICATION SETUP
+# 1. FASTAPI SETUP & DATABASE INITIALIZATION
 # ---------------------------------------------------------
 app = FastAPI(
-    title="CNI & Ministry Secure Transfer",
+    title="CNI & Ministry Secure Transfer API",
     version="1.0.0"
 )
+
+# Initialize PostgreSQL tables automatically when server starts
+init_db()
 
 # ---------------------------------------------------------
 # 2. KEY INITIALIZATION & DIRECTORY CONFIGURATION
 # ---------------------------------------------------------
-# Load or generate 256-bit AES key for REST runtime
 AES_KEY = generate_or_load_key()
 
-# Define local file storage paths
 UPLOAD_DIR = "storage/temp_uploads"
 ENCRYPTED_DIR = "storage/encrypted_files"
 DECRYPTED_DIR = "storage/downloads"
-
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(ENCRYPTED_DIR, exist_ok=True)
@@ -35,81 +38,87 @@ os.makedirs(DECRYPTED_DIR, exist_ok=True)
 
 
 # ---------------------------------------------------------
-# 3. HEALTHCHECK ENDPOINT
+# 3. HEALTHCHECK & AUDIT LOG ENDPOINTS
 # ---------------------------------------------------------
 @app.get("/")
 def health_check():
-    """
-    Root endpoint to verify operational status of the REST API server.
-    """
     return {"status": "online", "message": "FastAPI REST Server is running."}
 
 
+@app.get("/api/admin/logs")
+def get_audit_logs(db: Session = Depends(get_db)):
+    """Retrieves all transfer audit records stored in PostgreSQL."""
+    return fetch_all_logs(db)
+
+
 # ---------------------------------------------------------
-# 4. MINISTRY OF INTERIOR ENDPOINT (SCAN & ENCRYPT)
+# 4. MINISTRY OF INTERIOR ENDPOINT (SCAN, ENCRYPT & LOG)
 # ---------------------------------------------------------
 @app.post("/api/interior/upload")
-async def upload_file(file: UploadFile = File(...)):
-    """
-    Handles incoming file uploads from the Ministry of Interior:
-    1- Validates file format (.xlsx, .xls)
-    2- Saves stream to temporary disk storage
-    3- Scans cell contents for sensitive citizen data (CIN / Phone)
-    4- Encrypts payload with AES-256-GCM
-    5- Removes unencrypted temporary file
-    """
-    # 1. Validate extension
+async def upload_file(file: UploadFile = File(...), db: Session = Depends(get_db)):
     if not file.filename.endswith(('.xlsx', '.xls')):
         raise HTTPException(status_code=400, detail="Only Excel files (.xlsx, .xls) are allowed.")
 
     temp_path = os.path.join(UPLOAD_DIR, file.filename)
     encrypted_path = os.path.join(ENCRYPTED_DIR, f"{file.filename}.enc")
 
-    # 2. Save incoming stream temporarily
+    # 1. Save stream temporarily
     with open(temp_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # 3. Execute PII scanner logic
+    # 2. Run PII regex scanner
     has_sensitive, findings = scan_excel_for_sensitive_data(temp_path)
 
-    # 4. Execute AES-256-GCM encryption logic
+    # 3. Encrypt file with AES-256-GCM
     encrypt_file(temp_path, encrypted_path, AES_KEY)
 
-    # 5. Remove plain-text temporary file from disk
+    # 4. Remove unencrypted file from disk
     if os.path.exists(temp_path):
         os.remove(temp_path)
+
+    # 5. Write audit record to PostgreSQL database
+    log_transfer_event(
+        db=db,
+        filename=file.filename,
+        actor_role="MINISTRY_OF_INTERIOR",
+        action_type="UPLOAD_ENCRYPT",
+        has_sensitive_data=has_sensitive
+    )
 
     return {
         "status": "success",
         "filename": file.filename,
+        "actor_role": "MINISTRY_OF_INTERIOR",
         "contains_sensitive_data": has_sensitive,
         "scan_findings": findings,
-        "message": "File scanned, encrypted with AES-256-GCM, and stored."
+        "message": "File scanned, encrypted, stored, and logged in database."
     }
 
 
 # ---------------------------------------------------------
-# 5. CNI ENDPOINT (DECRYPT & DOWNLOAD)
+# 5. CNI ENDPOINT (DECRYPT, DOWNLOAD & LOG)
 # ---------------------------------------------------------
 @app.get("/api/cni/download/{file_name}")
-async def download_file(file_name: str):
-    """
-    Handles file retrieval requests for CNI:
-    1- Verifies presence of requested encrypted file (.enc)
-    2- Decrypts and validates authentication tag via AES-256-GCM
-    3- Streams restored Excel document back to client
-    """
+async def download_file(file_name: str, db: Session = Depends(get_db)):
     encrypted_path = os.path.join(ENCRYPTED_DIR, f"{file_name}.enc")
     restored_path = os.path.join(DECRYPTED_DIR, file_name)
 
-    # 1. Verify encrypted target exists
     if not os.path.exists(encrypted_path):
         raise HTTPException(status_code=404, detail="Requested file not found in encrypted storage.")
 
-    # 2. Execute AES-256-GCM decryption logic
+    # 1. Decrypt file
     decrypt_file(encrypted_path, restored_path, AES_KEY)
 
-    # 3. Stream restored Excel file over HTTP
+    # 2. Write download audit record to PostgreSQL database
+    log_transfer_event(
+        db=db,
+        filename=file_name,
+        actor_role="CNI",
+        action_type="DECRYPT_DOWNLOAD",
+        has_sensitive_data=False
+    )
+
+    # 3. Stream restored Excel back to client
     return FileResponse(
         path=restored_path,
         filename=f"decrypted_{file_name}",
