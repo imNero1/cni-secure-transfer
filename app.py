@@ -3,6 +3,7 @@ import shutil
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
 
 from security_engine import (
     generate_or_load_key,
@@ -20,6 +21,14 @@ app = FastAPI(
     title="CNI & Ministry Secure Transfer API",
     version="1.0.0"
 )
+
+# Enable CORS so your Angular app (localhost:4200) can make requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins for dev (or use ["http://localhost:4200"])
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],G
 
 # Initialize database gracefully on server startup
 @app.on_event("startup")
