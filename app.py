@@ -29,6 +29,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],G
+    expose_headers=["Content-Disposition"],)
 
 # Initialize database gracefully on server startup
 @app.on_event("startup")
