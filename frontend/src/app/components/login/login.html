@@ -1,23 +1,50 @@
-<div style="max-width: 400px; margin: 100px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
-  <h2>CNI Secure Transfer - Login</h2>
-  
-  <div *ngIf="errorMessage" style="color: red; margin-bottom: 10px;">
-    {{ errorMessage }}
+<div class="login-page">
+  <div class="grid-overlay"></div>
+
+  <div class="login-card">
+    <div class="login-header">
+      <span class="badge">SECURE ACCESS</span>
+      <h1>CNI <span class="accent">Transfer</span></h1>
+      <p class="subtitle">Authenticate to continue</p>
+    </div>
+
+    <form class="login-form" (ngSubmit)="onLogin()">
+      <div class="error-banner" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <div class="field">
+        <label for="username">Username</label>
+        <input
+          id="username"
+          type="text"
+          name="username"
+          [(ngModel)]="username"
+          autocomplete="username"
+          required
+        />
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          name="password"
+          [(ngModel)]="password"
+          autocomplete="current-password"
+          required
+        />
+      </div>
+
+      <button type="submit" class="login-btn">
+        Login
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <span class="status-dot"></span>
+      <span>System online</span>
+    </div>
   </div>
-
-  <form (ngSubmit)="onLogin()">
-    <div style="margin-bottom: 15px;">
-      <label>Username</label>
-      <input type="text" [(ngModel)]="username" name="username" required style="width: 100%; padding: 8px; margin-top: 5px;" />
-    </div>
-
-    <div style="margin-bottom: 15px;">
-      <label>Password</label>
-      <input type="password" [(ngModel)]="password" name="password" required style="width: 100%; padding: 8px; margin-top: 5px;" />
-    </div>
-
-    <button type="submit" style="width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-      Login
-    </button>
-  </form>
 </div>
