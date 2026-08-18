@@ -75,7 +75,19 @@ def fetch_all_logs(db: Session):
 
 
 # ---------------------------------------------------------
-# 5. STANDALONE SCRIPT TEST
+# 5. USER MODEL
+# ---------------------------------------------------------
+class User(Base):
+    """Stores login credentials for CNI / Ministry staff."""
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, nullable=False, index=True)
+    hashed_password = Column(String, nullable=False)
+    role = Column(String, nullable=False)  # MINISTRY_OF_INTERIOR or CNI
+
+# ---------------------------------------------------------
+# 6. STANDALONE SCRIPT TEST
 # ---------------------------------------------------------
 if __name__ == "__main__":
     init_db()

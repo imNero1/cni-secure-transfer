@@ -28,7 +28,7 @@ app.add_middleware(
     allow_origins=["*"],  # Allows all origins for dev (or use ["http://localhost:4200"])
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],G
+    allow_headers=["*"],
     expose_headers=["Content-Disposition"],)
 
 # Initialize database gracefully on server startup
