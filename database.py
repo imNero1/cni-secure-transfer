@@ -27,7 +27,8 @@ class TransferLog(Base):
     action_type = Column(String, nullable=False)  # UPLOAD_ENCRYPT or DECRYPT_DOWNLOAD
     has_sensitive_data = Column(Boolean, default=False)
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
-
+def get_user_by_username(db: Session, username: str):
+    return db.query(User).filter(User.username == username).first()
 
 # ---------------------------------------------------------
 # 3. LIFECYCLE & DEPENDENCY FUNCTIONS
