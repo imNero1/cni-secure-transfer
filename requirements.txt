@@ -9,3 +9,4 @@ pyjwt
 python-dotenv
 passlib[bcrypt]
 python-multipart
+psycopg2-binary
