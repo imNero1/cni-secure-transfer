@@ -20,7 +20,6 @@ def generate_or_load_key(key_file="secret.key"):
             f.write(key)
         return key
 
-
 # ---------------------------------------------------------
 # 2. SENSITIVE DATA SCANNER (Ministry of Interior / CNI Specific)
 # ---------------------------------------------------------
