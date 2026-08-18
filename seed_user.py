@@ -5,8 +5,8 @@ init_db()
 db = SessionLocal()
 
 username = "Samurai_69"
-password = "partylike2023"   # pick your own
-role = "CNI"                # or "MINISTRY_OF_INTERIOR"
+password = "partylike2023"   
+role = "CNI"              
 
 existing = db.query(User).filter(User.username == username).first()
 if existing:
