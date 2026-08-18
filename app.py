@@ -4,6 +4,9 @@ from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import Depends
+from auth import create_token, require_role, authenticate_user
 
 from security_engine import (
     generate_or_load_key,
@@ -76,6 +79,15 @@ def get_test_token(role: str):
 def get_audit_logs(db: Session = Depends(get_db)):
     """Retrieves all transfer audit records stored in PostgreSQL."""
     return fetch_all_logs(db)
+
+@app.post("/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = authenticate_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+
+    token = create_token(role=user.role, username=user.username)
+    return {"access_token": token, "token_type": "bearer"}
 
 
 # ---------------------------------------------------------
