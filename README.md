@@ -57,13 +57,13 @@ Role separation is enforced **server-side** via JWT role claims — the Interior
 
 ### Login
 
-![Login screen](H:\projects\cni\Sc\login.png)
+![Login screen](Sc\login.png)
 
 ### Ministry of Interior — Upload
-![Interior upload dashboard](H:\projects\cni\Sc\interior.png)
+![Interior upload dashboard](Sc\interior.png)
 
 ### CNI — Download & Audit Logs
-![CNI download dashboard](H:\projects\cni\Sc\cni.png)
+![CNI download dashboard](Sc\cni.png)
 
 ---
 
