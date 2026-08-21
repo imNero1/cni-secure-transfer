@@ -20,13 +20,20 @@ export class LoginComponent {
   errorMessage = '';
 
   onLogin(): void {
-    this.authService.login(this.username, this.password).subscribe({
-      next: () => {
-        this.router.navigate(['/dashboard']);
-      },
-      error: (err) => {
-        this.errorMessage = 'Invalid username or password';
+  this.authService.login(this.username, this.password).subscribe({
+    next: () => {
+      const role = this.authService.getRole();
+      if (role === 'CNI') {
+        this.router.navigate(['/cni']);
+      } else if (role === 'MINISTRY_OF_INTERIOR') {
+        this.router.navigate(['/interior']);
+      } else {
+        this.errorMessage = 'Unknown role — contact admin.';
       }
-    });
-  }
+    },
+    error: (err) => {
+      this.errorMessage = 'Invalid username or password';
+    }
+  });
+}
 }

@@ -1,0 +1,36 @@
+<div class="page">
+  <div class="grid-overlay"></div>
+  <div class="panel wide">
+    <div class="panel-header">
+      <span class="badge">CNI</span>
+      <h1>Secure <span class="accent">File Download</span></h1>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+
+    <p class="status" *ngIf="statusMessage">{{ statusMessage }}</p>
+
+    <h3>PostgreSQL Audit Logs</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Filename</th><th>Actor Role</th><th>Action</th><th>Timestamp</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of logs">
+          <td>{{ log.id }}</td>
+          <td>{{ log.filename }}</td>
+          <td>{{ log.actor_role }}</td>
+          <td>{{ log.action_type }}</td>
+          <td>{{ log.timestamp }}</td>
+          <td>
+            <button class="action-btn small" *ngIf="log.action_type === 'UPLOAD_ENCRYPT'" (click)="download(log.filename)">Download</button>
+          </td>
+        </tr>
+        <tr *ngIf="logs.length === 0">
+          <td colspan="6">No audit log records found yet.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

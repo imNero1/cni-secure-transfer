@@ -5,10 +5,10 @@ import { Observable } from 'rxjs';
 export interface AuditLog {
   id: number;
   filename: string;
-  sender: string;
-  recipient: string;
+  actor_role: string;
+  action_type: string;
+  has_sensitive_data: boolean;
   timestamp: string;
-  status: string;
 }
 
 @Injectable({
@@ -21,12 +21,17 @@ export class TransferService {
   uploadFile(file: File, recipient: string): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('recipient', recipient);
 
-    return this.http.post(`${this.apiUrl}/upload`, formData);
+    return this.http.post(`${this.apiUrl}/api/interior/upload`, formData);
   }
 
   getAuditLogs(): Observable<AuditLog[]> {
-    return this.http.get<AuditLog[]>(`${this.apiUrl}/logs`);
+    return this.http.get<AuditLog[]>(`${this.apiUrl}/api/admin/logs`);
+  }
+
+  downloadFile(filename: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/api/cni/download/${filename}`, {
+      responseType: 'blob'
+    });
   }
 }

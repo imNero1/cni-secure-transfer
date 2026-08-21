@@ -56,10 +56,10 @@ def require_role(required_role: str):
             role = payload.get("role")
             if role != required_role:
                 raise HTTPException(
-                    status_code=403, 
+                    status_code=403,
                     detail=f"Access denied: Requires {required_role} role."
                 )
-            return role
+            return payload.get("sub", role)  # return username if present, fallback to role
         except jwt.ExpiredSignatureError:
             raise HTTPException(status_code=401, detail="Token has expired.")
         except jwt.PyJWTError:

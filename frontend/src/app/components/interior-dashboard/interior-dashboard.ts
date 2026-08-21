@@ -1,28 +1,23 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth';
-import { TransferService, AuditLog } from '../../services/transfer';
+import { TransferService } from '../../services/transfer';
 
 @Component({
-  selector: 'app-dashboard',
+  selector: 'app-interior-dashboard',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './dashboard.html',
-  styleUrl: './dashboard.css'
+  templateUrl: './interior-dashboard.html',
+  styleUrl: './interior-dashboard.css'
 })
-export class DashboardComponent implements OnInit {
+export class InteriorDashboardComponent {
   private authService = inject(AuthService);
   private transferService = inject(TransferService);
 
   selectedFile: File | null = null;
   recipient = '';
   statusMessage = '';
-  logs: AuditLog[] = [];
-
-  ngOnInit(): void {
-    this.loadLogs();
-  }
 
   onFileSelected(event: any): void {
     if (event.target.files.length > 0) {
@@ -41,20 +36,10 @@ export class DashboardComponent implements OnInit {
         this.statusMessage = 'File encrypted and uploaded successfully!';
         this.selectedFile = null;
         this.recipient = '';
-        this.loadLogs();
       },
       error: (err) => {
         this.statusMessage = 'Upload failed. Please check backend connection.';
       }
-    });
-  }
-
-  loadLogs(): void {
-    this.transferService.getAuditLogs().subscribe({
-      next: (data) => {
-        this.logs = data;
-      },
-      error: (err) => console.error('Failed to load audit logs', err)
     });
   }
 

@@ -1,0 +1,22 @@
+<div class="page">
+  <div class="grid-overlay"></div>
+  <div class="panel">
+    <div class="panel-header">
+      <span class="badge">MINISTRY OF INTERIOR</span>
+      <h1>Encrypted <span class="accent">File Upload</span></h1>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+
+    <p class="status" *ngIf="statusMessage">{{ statusMessage }}</p>
+
+    <div class="upload-box">
+      <label>Select File (.xlsx only)</label>
+      <input type="file" accept=".xlsx,.xls" (change)="onFileSelected($event)" />
+
+      <label>Recipient Identifier</label>
+      <input type="text" [(ngModel)]="recipient" placeholder="e.g. user@cni.tn" />
+
+      <button class="action-btn" (click)="onUpload()">Encrypt & Transfer File</button>
+    </div>
+  </div>
+</div>

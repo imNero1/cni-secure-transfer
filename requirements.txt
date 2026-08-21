@@ -10,3 +10,5 @@ python-dotenv
 passlib[bcrypt]
 python-multipart
 psycopg2-binary
+bcrypt==4.0.1
+xlrd
